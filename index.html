@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POTATOHUB</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;background:linear-gradient(120deg,#070b1a,#0b1230,#050914);color:white;}
+
+.card{width:95%;max-width:820px;background:rgba(255,255,255,0.04);border-radius:16px;padding:20px;box-shadow:0 10px 35px rgba(0,0,0,.6);}
+header{text-align:center;margin-bottom:12px}
+h1{margin:0;font-weight:700;letter-spacing:1px}
+.sub{opacity:.8}
+
+.grid{display:grid;grid-template-columns:1fr 300px;gap:12px}
+.box{background:rgba(255,255,255,.05);border-radius:12px;padding:12px}
+
+input,button{width:100%;padding:12px;border-radius:10px;border:none;margin-top:6px}
+input{background:rgba(255,255,255,.06);color:white}
+button{background:#3b82f6;color:white;font-weight:600;cursor:pointer;transition:.15s}
+button:active{transform:scale(.97)}
+
+.plan{margin-top:8px;text-align:center}
+.plan h3{margin:4px 0}
+.plan p{opacity:.8;margin:0}
+
+.msg{text-align:center;margin-top:6px;font-weight:600}
+
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <header>
+    <h1>POTATOHUB</h1>
+    <div class="sub">Whitelist System</div>
+  </header>
+
+  <div class="grid">
+    <div>
+      <div class="box">
+        <b>Usuario Roblox</b>
+        <input id="user" placeholder="Ej: xXPotatoProXx">
+      </div>
+
+      <div class="box" style="margin-top:10px">
+        <b>Código</b>
+        <input id="code" placeholder="POTATOHUB">
+        <button onclick="redeem()">Canjear</button>
+        <div id="codeMsg" class="msg"></div>
+      </div>
+
+      <div class="box" style="margin-top:10px">
+        <b>Planes</b>
+        <div class="plan"><h3>6 Hours</h3><p>2 créditos</p><button onclick="buy(6,2)">Comprar</button></div>
+        <div class="plan"><h3>12 Hours</h3><p>3 créditos</p><button onclick="buy(12,3)">Comprar</button></div>
+        <div class="plan"><h3>1 Day</h3><p>4 créditos</p><button onclick="buy(24,4)">Comprar</button></div>
+        <div id="buyMsg" class="msg"></div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>Estado</h3>
+      <p>Créditos: <b id="credits">0</b></p>
+      <p>Tiempo restante:</p>
+      <p><b id="time">0h 0m 0s</b></p>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "https://TU_API"; // backend
+let credits = 0;
+let expire = 0;
+let used = false;
+
+function update(){
+  document.getElementById("credits").innerText = credits;
+  let left = Math.max(0, expire - Date.now());
+  let h = Math.floor(left/3600000);
+  let m = Math.floor((left%3600000)/60000);
+  let s = Math.floor((left%60000)/1000);
+  document.getElementById("time").innerText = `${h}h ${m}m ${s}s`;
+}
+setInterval(update,1000);
+
+function redeem(){
+  let user = document.getElementById("user").value.trim();
+  let code = document.getElementById("code").value.trim();
+  if(!user) return alert("Pon tu user primero");
+  if(used) return alert("Este código ya fue usado");
+
+  if(code === "POTATOHUB"){
+    credits += 5;
+    used = true;
+    document.getElementById("codeMsg").innerText = "+5 créditos";
+  } else {
+    document.getElementById("codeMsg").innerText = "Código inválido";
+  }
+}
+
+function buy(hours,cost){
+  let user = document.getElementById("user").value.trim();
+  if(!user) return alert("Pon tu user primero");
+  if(credits < cost){
+    document.getElementById("buyMsg").innerText = "Créditos insuficientes :[";
+    return;
+  }
+  credits -= cost;
+  let now = Date.now();
+  if(expire < now) expire = now;
+  expire += hours*3600000;
+
+  fetch(`${API}/add?user=${user}&time=${hours*3600}`);
+
+  document.getElementById("buyMsg").innerText = `Whitelist activa ${hours} horas`;
+}
+</script>
+</body>
+</html>
